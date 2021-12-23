@@ -1,0 +1,103 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  color: #73717e;
+  width: 100%;
+  padding: 0 20px;
+  font-size: "Gilroy-Regular", sans-serif;
+  background-color: rgb(8, 8, 8);
+  @media (max-width: 600px) {
+    height: 80px;
+  }
+}
+.mobilePop {
+  position: fixed;
+  color: #73717e;
+  background-color: black;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  padding: 20px;
+  z-index: 9999;
+  top: -1000px;
+  transition: all 0.5s ease-in-out;
+  a {
+    font-family: "Gilroy-Regular", sans-serif;
+    font-size: 14px;
+
+    margin: 15px 0;
+  }
+}
+
+.mobilemenu {
+  display: none;
+  @media (max-width: 1024px) {
+    display: block;
+    margin-right: 20px;
+  }
+}
+.mobileItems {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+}
+.mobileTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  span {
+    max-height: 15px;
+    max-width: 15px;
+  }
+  p {
+    font-size: 14px;
+    font-family: "Gilroy-Regular", sans-serif;
+  }
+}
+.links {
+  a {
+    margin: 0 20px;
+    transition: all 0.3s ease-in-out;
+    padding-bottom: 10px;
+
+    &:hover {
+      color: white;
+    }
+
+    @media (max-width: 1024px) {
+      display: none;
+    }
+  }
+  button {
+    border: 1px solid #fff;
+    background-color: transparent;
+    color: white;
+    font-family: "Adieu-Regular", sans-serif;
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    margin-left: 20px;
+
+    &:hover {
+      background-color: #7c6efb;
+      border: 1px solid #7c6efb;
+      color: white;
+      border-radius: 15px;
+    }
+    @media (max-width: 600px) {
+      padding: 10;
+      font-size: 10px;
+    }
+  }
+}
+
+.logo {
+  @media (max-width: 600px) {
+    margin: 0 auto 0 0;
+  }
+}
