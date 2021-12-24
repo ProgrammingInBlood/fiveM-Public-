@@ -84,20 +84,20 @@ export default function Home() {
       </div>
       <div className={styles.faqs}>
         <div className={styles.faq}>
-          <h3>How ASM Works</h3>
+          <h3>What is Unreal Eye</h3>
           <p>
-            Create, compete, and interact with A.I. Agents across many gaming
-            worlds, financial applications, and metaverses. Create new Agents,
-            or use ASM to give your existing NFT a brain.
+            Unreal Eye helps to Create, compete, and interact with A.I. Agents
+            across many gaming worlds, financial applications, and metaverses.
+            Create new Agents, etc.
           </p>
           <button className={styles.button}>Learn More</button>
         </div>
         <div className={styles.faq}>
-          <h3>How ASM Works</h3>
+          <h3>How Detection Works</h3>
           <p>
-            Create, compete, and interact with A.I. Agents across many gaming
-            worlds, financial applications, and metaverses. Create new Agents,
-            or use ASM to give your existing NFT a brain.
+            This model detects objects defined in the COCO dataset. The model is
+            trained on a large dataset of images collected by the Internet
+            Engineering Task Force.
           </p>
           <button className={styles.button}>Learn More</button>
         </div>

@@ -175,7 +175,7 @@
   color: #73717e;
   padding: 20px 0;
   transition: all 0.3s ease-in-out;
-
+  width: 50%;
   h3 {
     font-family: "Adieu-Regular", sans-serif;
     padding-bottom: 10px;
@@ -209,6 +209,9 @@
     @media (max-width: 1024px) {
       padding-left: 0;
     }
+  }
+  @media (max-width: 1024px) {
+    width: 100%;
   }
 }
 .projectContainer {
