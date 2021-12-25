@@ -72,7 +72,7 @@ export default function Home() {
           opacity: showModal2 ? 1 : 0,
         }}
       >
-        <div className={styles.modal} style={{ paddingTop: 30 }}>
+        <div className={styles.modal} style={{ paddingTop: 50 }}>
           <h1>Choose a Model</h1>
           <ul>
             <li>
