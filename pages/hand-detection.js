@@ -103,7 +103,7 @@ function HandPose() {
     if (!err && !cameraLoading) {
       streamCamVideo(err);
     }
-  }, [err, cameraLoading]);
+  }, [err, cameraLoading, mode]);
 
   const handleSwitch = () => {
     if (cameras.length > 1) {
