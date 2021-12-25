@@ -5,7 +5,6 @@ import styles from "./Navbar.module.scss";
 function Navbar() {
   const [show, setShow] = useState(false);
 
-  console.log(show);
   return (
     <div className={styles.navbarContainer}>
       <div className={styles.mobilePop} style={{ top: show ? 0 : -1000 }}>
@@ -15,6 +14,7 @@ function Navbar() {
             width={50}
             height={20}
             objectFit="contain"
+            alt="logo"
           />
           <p style={{ color: "white" }}>Menu</p>
           <span onClick={() => setShow(!show)}>

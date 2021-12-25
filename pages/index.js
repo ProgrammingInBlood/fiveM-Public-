@@ -74,7 +74,7 @@ export default function Home() {
           opacity: showModal2 ? 1 : 0,
         }}
       >
-        <div className={styles.modal}>
+        <div className={styles.modal} style={{ paddingTop: 30 }}>
           <h1>Choose a Model</h1>
           <ul>
             <li>
@@ -82,12 +82,22 @@ export default function Home() {
                 className={styles.modalItems}
                 onClick={() => handleRoute("/object-detection")}
               >
-                <Image src="/images/1.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/1.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>Object Detection</h3>
               </div>
 
               <div className={styles.modalItems}>
-                <Image src="/images/2.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/2.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>Text Toxicity Detection</h3>
               </div>
             </li>
@@ -96,24 +106,44 @@ export default function Home() {
                 className={styles.modalItems}
                 onClick={() => handleRoute("/hand-detection")}
               >
-                <Image src="/images/3.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/3.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>Hand Detection</h3>
               </div>
 
               <div className={styles.modalItems}>
-                <Image src="/images/4.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/4.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>Body Segmentation</h3>
               </div>
             </li>
 
             <li>
               <div className={styles.modalItems}>
-                <Image src="/images/5.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/5.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>Face Detection</h3>
               </div>
 
               <div className={styles.modalItems}>
-                <Image src="/images/6.png" width={100} height={100} />
+                <Image
+                  alt="AR-model"
+                  src="/images/6.png"
+                  width={100}
+                  height={100}
+                />
                 <h3>KNN Classifier</h3>
               </div>
             </li>
@@ -135,7 +165,7 @@ export default function Home() {
           opacity: showModal ? 1 : 0,
         }}
       >
-        <div className={styles.modal} style={{ paddingTop: 30 }}>
+        <div className={styles.modal}>
           <div className={styles.close}></div>
 
           <h1>We Need Camera Access To Work</h1>
@@ -145,6 +175,7 @@ export default function Home() {
 
           <div className={styles.modalImage}>
             <Image
+              alt="AR-model"
               src="/images/allow.jpg"
               width={660}
               height={200}
@@ -212,27 +243,57 @@ export default function Home() {
         <h1>More Projets Coming Soon</h1>
         <div className={styles.projects}>
           <div className={styles.project}>
-            <Image src="/images/1.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/1.png"
+              width={100}
+              height={100}
+            />
             <h3>Object Detection</h3>
           </div>
           <div className={styles.project}>
-            <Image src="/images/2.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/2.png"
+              width={100}
+              height={100}
+            />
             <h3>Text Toxicity Detection</h3>
           </div>
           <div className={styles.project}>
-            <Image src="/images/3.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/3.png"
+              width={100}
+              height={100}
+            />
             <h3>Hand Detection</h3>
           </div>
           <div className={styles.project}>
-            <Image src="/images/4.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/4.png"
+              width={100}
+              height={100}
+            />
             <h3>Body Segmentation</h3>
           </div>
           <div className={styles.project}>
-            <Image src="/images/5.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/5.png"
+              width={100}
+              height={100}
+            />
             <h3>Face Detection</h3>
           </div>
           <div className={styles.project}>
-            <Image src="/images/6.png" width={100} height={100} />
+            <Image
+              alt="AR-model"
+              src="/images/6.png"
+              width={100}
+              height={100}
+            />
             <h3>KNN Classifier</h3>
           </div>
         </div>
