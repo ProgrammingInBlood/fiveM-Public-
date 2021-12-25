@@ -52,8 +52,6 @@ export default function Home() {
       );
   }, []);
 
-  console.log({ cameraPermission });
-
   return (
     <div className={styles.container}>
       <Head>

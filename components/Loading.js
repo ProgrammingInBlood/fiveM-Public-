@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState, useEffect } from "react";
 
 import styles from "./Loading.module.scss";
@@ -17,14 +18,21 @@ function Loading({ display }) {
       setString(nextString);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [strings]);
 
   return (
     <div
       className={styles.container}
       style={{ display: display ? "none" : "flex" }}
     >
-      <img src="/images/Deep.gif" alt="loading" />
+      <Image
+        src="/images/Deep.gif"
+        alt="loading"
+        width={300}
+        height={300}
+        objectFit="contain"
+        priority={true}
+      />
 
       <p
         style={{

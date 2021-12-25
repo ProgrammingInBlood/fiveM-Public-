@@ -11,50 +11,33 @@ function HandPose() {
   const router = useRouter();
   const videoRef = useRef();
   const canvasRef = useRef();
+  const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(true);
   const [cameras, setCameras] = useState([]);
   const [mode, setMode] = useState("environment");
   const [show, setShow] = useState(false);
   const [logs, setLogs] = useState([]);
   const [showRealTimeLogs, setShowRealTimeLogs] = useState(false);
-  const [hands, setHands] = useState([]);
-
+  const [cameraLoading, setCameraLoading] = useState(true);
+  //Video settings
+  var constraints = {
+    audio: false,
+    video: {
+      width: 640,
+      height: 480,
+      facingMode: mode,
+    },
+  };
   const handleLogs = () => {
     setShow(!show);
   };
   const handleRealTimeLogs = () => {
     setShowRealTimeLogs(!showRealTimeLogs);
   };
-  const handleRoute = async () => {
-    await navigator.mediaDevices
-      .getUserMedia({
-        video: {
-          width: 640,
-          height: 480,
-          facingMode: mode,
-        },
-        audio: false,
-      })
-      .then(function (mediaStream) {
-        const tracks = mediaStream.getTracks();
-        mediaStream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-      });
-    router.push("/");
-  };
+  const handleRoute = async () => {};
 
-  const streamCamVideo = async (cameraMode) => {
-    var constraints = {
-      audio: false,
-      video: {
-        width: 640,
-        height: 480,
-        facingMode: cameraMode,
-      },
-    };
-
-    await navigator.mediaDevices
+  useEffect(() => {
+    navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function (mediaStream) {
         navigator.mediaDevices.enumerateDevices().then(function (devices) {
@@ -69,12 +52,17 @@ function HandPose() {
         video.onloadedmetadata = function (e) {
           video.play();
         };
-        console.log(mediaStream.getTracks());
+        setCameraLoading(false);
       })
       .catch(function (err) {
+        setCameraLoading(false);
+        setLoading(false);
+        setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
+  }, []);
 
+  const streamCamVideo = async () => {
     const model = handdetection.SupportedModels.MediaPipeHands;
 
     const detector = await handdetection.createDetector(model, {
@@ -88,22 +76,34 @@ function HandPose() {
       setLoading(false);
     }
 
-    const webCamPromise = navigator.mediaDevices;
+    const webCamPromise = await navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        const cameras = devices.filter(function (device) {
+          return device.label !== "";
+        });
+
+        if (cameras.length === 0) {
+          return false;
+        } else {
+          return true;
+        }
+      });
     await Promise.all([detector, webCamPromise])
       .then(async (values) => {
-        console.log({ values });
-        detectFrame(videoRef.current, detector);
+        if (values[1]) {
+          detectFrame(videoRef.current, detector);
+        }
       })
       .catch((error) => {
         console.error(error);
       });
   };
-
   useEffect(() => {
-    streamCamVideo(mode);
-  }, [mode]);
-
-  console.log(hands);
+    if (!err && !cameraLoading) {
+      streamCamVideo(err);
+    }
+  }, [err, cameraLoading]);
 
   const handleSwitch = () => {
     if (cameras.length > 1) {

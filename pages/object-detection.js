@@ -9,12 +9,24 @@ function Object() {
   const router = useRouter();
   const videoRef = useRef();
   const canvasRef = useRef();
+  const [err, setErr] = useState(false);
   const [loading, setLoading] = useState(true);
   const [cameras, setCameras] = useState([]);
   const [mode, setMode] = useState("environment");
   const [show, setShow] = useState(false);
   const [logs, setLogs] = useState([]);
   const [showRealTimeLogs, setShowRealTimeLogs] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(true);
+
+  //Video settings
+  var constraints = {
+    audio: false,
+    video: {
+      width: 640,
+      height: 480,
+      facingMode: mode,
+    },
+  };
 
   const handleLogs = () => {
     setShow(!show);
@@ -22,36 +34,10 @@ function Object() {
   const handleRealTimeLogs = () => {
     setShowRealTimeLogs(!showRealTimeLogs);
   };
-  const handleRoute = async () => {
-    await navigator.mediaDevices
-      .getUserMedia({
-        video: {
-          width: 640,
-          height: 480,
-          facingMode: mode,
-        },
-        audio: false,
-      })
-      .then(function (mediaStream) {
-        const tracks = mediaStream.getTracks();
-        mediaStream.getTracks().forEach(function (track) {
-          track.stop();
-        });
-      });
-    router.push("/");
-  };
+  const handleRoute = async () => {};
 
-  const streamCamVideo = async (cameraMode) => {
-    var constraints = {
-      audio: false,
-      video: {
-        width: 640,
-        height: 480,
-        facingMode: cameraMode,
-      },
-    };
-
-    await navigator.mediaDevices
+  useEffect(() => {
+    navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function (mediaStream) {
         navigator.mediaDevices.enumerateDevices().then(function (devices) {
@@ -66,23 +52,41 @@ function Object() {
         video.onloadedmetadata = function (e) {
           video.play();
         };
-        console.log(mediaStream.getTracks());
+        setCameraLoading(false);
       })
       .catch(function (err) {
+        setCameraLoading(false);
+        setLoading(false);
+        setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
+  }, []);
 
+  const streamCamVideo = async () => {
     const modelPromise = cocoSsd.load();
     const model = await modelPromise;
-
     if (model) {
       setLoading(false);
     }
+    const webCamPromise = await navigator.mediaDevices
+      .enumerateDevices()
+      .then((devices) => {
+        const cameras = devices.filter(function (device) {
+          return device.label !== "";
+        });
 
-    const webCamPromise = navigator.mediaDevices;
+        if (cameras.length === 0) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+
     await Promise.all([modelPromise, webCamPromise])
       .then((values) => {
-        detectFrame(videoRef.current, values[0]);
+        if (values[1]) {
+          detectFrame(videoRef.current, values[0]);
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -90,8 +94,10 @@ function Object() {
   };
 
   useEffect(() => {
-    streamCamVideo(mode);
-  }, [mode]);
+    if (!err && !cameraLoading) {
+      streamCamVideo(err);
+    }
+  }, [err, cameraLoading]);
 
   const handleSwitch = () => {
     if (cameras.length > 1) {
@@ -165,9 +171,8 @@ function Object() {
     }
   }, [logs]);
 
-  return (
-    <div id="container" className={styles.container}>
-      <Loading display={!loading} />
+  if (err) {
+    return (
       <div
         className={styles.container}
         style={{
@@ -193,7 +198,10 @@ function Object() {
             Possible Reasons :
           </h3>
           <ul
-            style={{ fontFamily: "Gilroy-Regular, sans-serif", paddingTop: 10 }}
+            style={{
+              fontFamily: "Gilroy-Regular, sans-serif",
+              paddingTop: 10,
+            }}
             className={styles.list}
           >
             <li>
@@ -218,6 +226,12 @@ function Object() {
           </ul>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div id="container" className={styles.container}>
+      <Loading display={!loading} />
 
       <div style={{ padding: 20, display: "flex", justifyContent: "center" }}>
         <div className={styles.canvas} id="canvasContainer">
