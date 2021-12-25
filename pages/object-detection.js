@@ -60,7 +60,7 @@ function Object() {
         setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
-  }, []);
+  }, [mode]);
 
   const streamCamVideo = async () => {
     const modelPromise = cocoSsd.load();
