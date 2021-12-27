@@ -1,11 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import styles from "../styles/Home.module.scss";
-import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "@tensorflow/tfjs";
+import * as handdetection from "@tensorflow-models/hand-pose-detection";
+import * as mpHands from "@mediapipe/hands";
+import * as dat from "dat.gui";
+import * as partColorScales from "../lib/body_color";
 import Loading from "../components/Loading";
 import { useRouter } from "next/router";
+import { fingerLookupIndices } from "../lib/camera";
 
-function Object() {
+function HandPose() {
   const router = useRouter();
   const videoRef = useRef();
   const canvasRef = useRef();
@@ -17,7 +21,6 @@ function Object() {
   const [logs, setLogs] = useState([]);
   const [showRealTimeLogs, setShowRealTimeLogs] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(true);
-
   //Video settings
   var constraints = {
     audio: false,
@@ -27,18 +30,62 @@ function Object() {
       facingMode: mode,
     },
   };
+  const defaultQuantBytes = 2;
+  const defaultMobileNetMultiplier = 0.75;
+  const defaultMobileNetStride = 16;
+  const defaultMobileNetInternalResolution = "medium";
 
+  const defaultResNetMultiplier = 1.0;
+  const defaultResNetStride = 16;
+  const defaultResNetInternalResolution = "low";
+
+  const guiState = {
+    algorithm: "multi-person-instance",
+    estimate: "partmap",
+    camera: null,
+    flipHorizontal: true,
+    input: {
+      architecture: "MobileNetV1",
+      outputStride: 16,
+      internalResolution: "low",
+      multiplier: 0.5,
+      quantBytes: 2,
+    },
+    multiPersonDecoding: {
+      maxDetections: 5,
+      scoreThreshold: 0.3,
+      nmsRadius: 20,
+      numKeypointForMatching: 17,
+      refineSteps: 10,
+    },
+    segmentation: {
+      segmentationThreshold: 0.7,
+      effect: "mask",
+      maskBackground: true,
+      opacity: 0.7,
+      backgroundBlurAmount: 3,
+      maskBlurAmount: 0,
+      edgeBlurAmount: 3,
+    },
+    partMap: {
+      colorScale: "rainbow",
+      effect: "partMap",
+      segmentationThreshold: 0.5,
+      opacity: 0.9,
+      blurBodyPartAmount: 3,
+      bodyPartEdgeBlurAmount: 3,
+    },
+    // showFps: !isMobile(),
+  };
   const handleLogs = () => {
     setShow(!show);
   };
   const handleRealTimeLogs = () => {
     setShowRealTimeLogs(!showRealTimeLogs);
   };
-  const handleRoute = async () => {
-    router.push("/");
-  };
+  const handleRoute = async () => {};
 
-  const getWebcam = async () => {
+  useEffect(() => {
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function (mediaStream) {
@@ -48,9 +95,8 @@ function Object() {
           });
           setCameras(camera);
         });
-        window.stream = mediaStream;
 
-        var video = videoRef.current;
+        var video = document.querySelector("video");
         video.srcObject = mediaStream;
         video.onloadedmetadata = function (e) {
           video.play();
@@ -63,29 +109,22 @@ function Object() {
         setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
-  };
-
-  const stopWebcam = async () => {
-    const tracks = window.stream.getTracks();
-    console.log(tracks);
-    tracks.forEach(function (track) {
-      track.stop();
-    });
-  };
-
-  useEffect(() => {
-    getWebcam();
-    return () => {
-      stopWebcam();
-    };
   }, [mode]);
 
   const streamCamVideo = async () => {
-    const modelPromise = cocoSsd.load();
-    const model = await modelPromise;
-    if (model) {
+    const model = handdetection.SupportedModels.MediaPipeHands;
+
+    const detector = await handdetection.createDetector(model, {
+      runtime: "mediapipe",
+      modelType: "full",
+      maxHands: 2,
+      solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mpHands.VERSION}`,
+    });
+
+    if (detector) {
       setLoading(false);
     }
+
     const webCamPromise = await navigator.mediaDevices
       .enumerateDevices()
       .then((devices) => {
@@ -99,18 +138,16 @@ function Object() {
           return true;
         }
       });
-
-    await Promise.all([modelPromise, webCamPromise])
-      .then((values) => {
+    await Promise.all([detector, webCamPromise])
+      .then(async (values) => {
         if (values[1]) {
-          detectFrame(videoRef.current, values[0]);
+          detectFrame(videoRef.current, detector);
         }
       })
       .catch((error) => {
         console.error(error);
       });
   };
-
   useEffect(() => {
     if (!err && !cameraLoading) {
       streamCamVideo(err);
@@ -129,11 +166,11 @@ function Object() {
 
   //SETTING UP TENSORFLOW
 
-  const detectFrame = async (video, model) => {
-    await model.detect(video).then((predictions) => {
+  const detectFrame = async (video, detector) => {
+    await detector.estimateHands(video).then((predictions) => {
       renderPredictions(predictions);
       requestAnimationFrame(() => {
-        detectFrame(video, model);
+        detectFrame(video, detector);
       });
     });
   };
@@ -142,43 +179,47 @@ function Object() {
     const ctx = canvasRef?.current?.getContext("2d");
     const ctx2 = document?.getElementById("canvasContainer");
     const ctx3 = document?.getElementById("video");
+    function drawPoint(y, x, r) {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    function drawPath(points, closePath) {
+      const region = new Path2D();
+      region.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        const point = points[i];
+        region.lineTo(point.x, point.y);
+      }
 
+      if (closePath) {
+        region.closePath();
+      }
+      ctx.stroke(region);
+    }
     if (ctx) {
       ctx.canvas.width = ctx3?.videoWidth;
       ctx.canvas.height = ctx3?.videoHeight;
-
       ctx.clearRect(0, 0, ctx3?.videoWidth, ctx2?.videoHeight);
-
-      //set position according to video size
-
-      // Font options.
-      const font = "12px sans-serif";
-      ctx.font = font;
-      ctx.textBaseline = "top";
       predictions.forEach((prediction) => {
         setLogs((logs) => [...logs, prediction]);
-
-        const x = prediction.bbox[0];
-        const y = prediction.bbox[1];
-        const width = prediction.bbox[2];
-        const height = prediction.bbox[3];
-        // Draw the bounding box.
-        ctx.strokeStyle = "#00FFFF";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(x, y, width, height);
-        // Draw the label background.
-        ctx.fillStyle = "#00FFFF";
-        const textWidth = ctx.measureText(prediction.class).width;
-        const textHeight = parseInt(font, 10); // base 10
-        ctx.fillRect(x, y, textWidth + 4, textHeight + 4);
-      });
-
-      predictions.forEach((prediction) => {
-        const x = prediction.bbox[0];
-        const y = prediction.bbox[1];
-        // Draw the text last to ensure it's on top.
-        ctx.fillStyle = "#000000";
-        ctx.fillText(prediction.class, x, y);
+        ctx.fillStyle = prediction?.handedness === "Left" ? "Red" : "Blue";
+        ctx.strokeStyle = "White";
+        ctx.lineWidth = 2;
+        const keypointsArray = prediction.keypoints;
+        for (let i = 0; i < keypointsArray.length; i++) {
+          const y = keypointsArray[i].x;
+          const x = keypointsArray[i].y;
+          drawPoint(x - 2, y - 2, 3);
+        }
+        const fingers = Object.keys(fingerLookupIndices);
+        for (let i = 0; i < fingers.length; i++) {
+          const finger = fingers[i];
+          const points = fingerLookupIndices[finger].map(
+            (idx) => prediction.keypoints[idx]
+          );
+          drawPath(points, false);
+        }
       });
     }
   };
@@ -189,8 +230,9 @@ function Object() {
     }
   }, [logs]);
 
-  if (err) {
-    return (
+  return (
+    <div id="container" className={styles.container}>
+      <Loading display={!loading} />
       <div
         className={styles.container}
         style={{
@@ -216,10 +258,7 @@ function Object() {
             Possible Reasons :
           </h3>
           <ul
-            style={{
-              fontFamily: "Gilroy-Regular, sans-serif",
-              paddingTop: 10,
-            }}
+            style={{ fontFamily: "Gilroy-Regular, sans-serif", paddingTop: 10 }}
             className={styles.list}
           >
             <li>
@@ -244,12 +283,6 @@ function Object() {
           </ul>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div id="container" className={styles.container}>
-      <Loading display={!loading} />
 
       <div style={{ padding: 20, display: "flex", justifyContent: "center" }}>
         <div className={styles.canvas} id="canvasContainer">
@@ -268,7 +301,7 @@ function Object() {
           {!showRealTimeLogs ? "Show Logs" : "Hide Logs"}
         </button>
       </div>
-      <div className={styles.buttons} style={{ paddingTop: 20 }}>
+      <div className={styles.buttons}>
         <button className={styles.button} onClick={handleRoute}>
           Go Back
         </button>
@@ -283,7 +316,7 @@ function Object() {
             {logs.map((log) => (
               <div className={styles.realTimeData} key={Math.random()}>
                 <p>Score:{log.score}</p>
-                <p>Object:{log.class}</p>
+                <p>Object:{log.handedness}</p>
               </div>
             ))}
           </div>
@@ -309,4 +342,4 @@ function Object() {
   );
 }
 
-export default Object;
+export default HandPose;

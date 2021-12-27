@@ -6,6 +6,7 @@ import * as mpHands from "@mediapipe/hands";
 import Loading from "../components/Loading";
 import { useRouter } from "next/router";
 import { fingerLookupIndices } from "../lib/camera";
+import stopMediaStream from "stop-media-stream";
 
 function HandPose() {
   const router = useRouter();
@@ -19,6 +20,7 @@ function HandPose() {
   const [logs, setLogs] = useState([]);
   const [showRealTimeLogs, setShowRealTimeLogs] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(true);
+
   //Video settings
   var constraints = {
     audio: false,
@@ -34,9 +36,11 @@ function HandPose() {
   const handleRealTimeLogs = () => {
     setShowRealTimeLogs(!showRealTimeLogs);
   };
-  const handleRoute = async () => {};
+  const handleRoute = async () => {
+    router.push("/");
+  };
 
-  useEffect(() => {
+  const getWebcam = async () => {
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function (mediaStream) {
@@ -46,8 +50,9 @@ function HandPose() {
           });
           setCameras(camera);
         });
+        window.stream = mediaStream;
 
-        var video = document.querySelector("video");
+        var video = videoRef.current;
         video.srcObject = mediaStream;
         video.onloadedmetadata = function (e) {
           video.play();
@@ -60,8 +65,22 @@ function HandPose() {
         setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
-  }, [mode]);
+  };
 
+  const stopWebcam = async () => {
+    const tracks = window.stream.getTracks();
+    console.log(tracks);
+    tracks.forEach(function (track) {
+      track.stop();
+    });
+  };
+
+  useEffect(() => {
+    getWebcam();
+    return () => {
+      stopWebcam();
+    };
+  }, [mode, videoRef]);
   const streamCamVideo = async () => {
     const model = handdetection.SupportedModels.MediaPipeHands;
 
@@ -72,7 +91,7 @@ function HandPose() {
       solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mpHands.VERSION}`,
     });
 
-    if (model) {
+    if (detector) {
       setLoading(false);
     }
 
@@ -129,7 +148,7 @@ function HandPose() {
   const renderPredictions = (predictions) => {
     const ctx = canvasRef?.current?.getContext("2d");
     const ctx2 = document?.getElementById("canvasContainer");
-    const ctx3 = document?.getElementById("video");
+    const ctx3 = videoRef.current;
     function drawPoint(y, x, r) {
       ctx.beginPath();
       ctx.arc(x, y, r, 0, 2 * Math.PI);
@@ -252,7 +271,7 @@ function HandPose() {
           {!showRealTimeLogs ? "Show Logs" : "Hide Logs"}
         </button>
       </div>
-      <div className={styles.buttons}>
+      <div className={styles.buttons} style={{ paddingTop: 20 }}>
         <button className={styles.button} onClick={handleRoute}>
           Go Back
         </button>
