@@ -6,7 +6,6 @@ import * as mpHands from "@mediapipe/hands";
 import Loading from "../components/Loading";
 import { useRouter } from "next/router";
 import { fingerLookupIndices } from "../lib/camera";
-import stopMediaStream from "stop-media-stream";
 
 function HandPose() {
   const router = useRouter();
