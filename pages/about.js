@@ -23,12 +23,12 @@ function About() {
       <div className={styles.details}>
         <h1 className={styles.titlefull}>Unreal Eye by Eklavya Singh</h1>
         <p className={styles.text}>
-          I develop websites for small business. I've been involved with
-          developing websites for 3 years. While I'm based in Hyderbad, India. I
-          build websites for people all over the world.. I'm very much
-          passionate about designing and developing website, also i have worked
-          with lots of API's and having well understanding of most programming
-          languages and Frameworks.
+          I develop websites for small business. I&apos;ve been involved with
+          developing websites for 3 years. While I&apos;m based in Hyderbad,
+          India. I build websites for people all over the world.. I&apos;m very
+          much passionate about designing and developing website, also i have
+          worked with lots of API&apos;s and having well understanding of most
+          programming languages and Frameworks.
         </p>
         <h1 className={styles.title}>My Recent Projects</h1>
         <div className={styles.products}>
