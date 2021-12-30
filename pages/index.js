@@ -2,6 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Contact from "../components/Contact";
 import Navbar from "../components/Navbar";
 import styles from "../styles/Homepage.module.scss";
 
@@ -64,7 +65,7 @@ export default function Home() {
         ></meta>
         <meta name="theme-color" content="#000"></meta>
       </Head>
-      <Navbar />
+      <Navbar index={1} />
       <div
         className={styles.modalContainer}
         style={{
@@ -279,6 +280,7 @@ export default function Home() {
             <h3>KNN Classifier</h3>
           </div>
         </div>
+        <Contact />
       </div>
     </div>
   );

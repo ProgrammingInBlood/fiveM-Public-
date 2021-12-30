@@ -1,0 +1,110 @@
+.container {
+  background-color: black;
+  min-height: 100vh;
+  color: white;
+  h1 {
+    font-family: "Adieu-Regular", sans-serif;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    user-select: none;
+  }
+}
+
+.video {
+  width: 100%;
+  height: auto;
+}
+
+.title {
+  max-width: 700px;
+  margin: 0 auto;
+  padding-top: 50px;
+  text-align: center;
+  font-size: 50px;
+
+  @media (max-width: 768px) {
+    font-size: 25px;
+  }
+}
+.details {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.titlefull {
+  max-width: 1000px;
+  padding-top: 20px;
+  font-size: 50px;
+  @media (max-width: 768px) {
+    font-size: 25px;
+  }
+}
+
+.text {
+  font-family: "Gilroy-Regular", sans-serif;
+  font-size: 20px;
+  color: #73717e;
+  padding-bottom: 30px;
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+}
+
+.products {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  padding-top: 10px;
+  flex-wrap: wrap;
+}
+
+.product {
+  background-color: #73717e;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 300px;
+  width: 100%;
+  height: 100%;
+  color: black;
+  padding: 40px 20px;
+  padding-bottom: 30px;
+  margin: 20px;
+  @media (max-width: 768px) {
+    margin: 10px 0;
+    max-width: 100%;
+  }
+
+  h3 {
+    padding-top: 20px;
+    font-family: "Adieu-Regular", sans-serif;
+    text-align: center;
+  }
+  p {
+    text-align: center;
+    padding-top: 20px;
+    font-family: "Gilroy-Regular", sans-serif;
+  }
+}
+
+.button {
+  border: 1px solid #7c6efb;
+  background-color: transparent;
+  color: white;
+  font-family: "Adieu-Regular", sans-serif;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  margin: 20px;
+  @media (max-width: 1024px) {
+    padding: 15px 20px;
+  }
+  &:hover {
+    background-color: #7c6efb;
+    color: white;
+    border-radius: 15px;
+  }
+}

@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
+import Router from "next/router";
 import { useState } from "react";
 import styles from "./Navbar.module.scss";
 
-function Navbar() {
+function Navbar({ index }) {
   const [show, setShow] = useState(false);
 
   return (
@@ -59,14 +61,36 @@ function Navbar() {
           </span>
         </div>
         <div className={styles.links}>
-          <a
-            href="#"
-            style={{ borderBottom: "2px solid #7c6efb", color: "white" }}
-          >
-            Home
-          </a>
-          <a href="#">For Developers</a>
-          <a href="#">Github</a>
+          <Link href="/">
+            <a
+              style={{
+                borderBottom: index === 1 ? "2px solid #7c6efb" : null,
+                color: index == 1 ? "white" : null,
+              }}
+            >
+              Home
+            </a>
+          </Link>
+          <Link href="/developers">
+            <a
+              style={{
+                borderBottom: index === 2 ? "2px solid #7c6efb" : null,
+                color: index == 2 ? "white" : null,
+              }}
+            >
+              For Developers
+            </a>
+          </Link>
+          <Link href="https://github.com/ProgrammingInBlood">
+            <a
+              style={{
+                borderBottom: index === 3 ? "2px solid #7c6efb" : null,
+                color: index == 3 ? "white" : null,
+              }}
+            >
+              Github
+            </a>
+          </Link>
         </div>
         <div className={styles.logo}>
           <Image
@@ -79,8 +103,18 @@ function Navbar() {
           />
         </div>
         <div className={styles.links}>
-          <a href="#">About Us</a>
-          <button>Get in touch</button>
+          <Link href="/about">
+            <a
+              style={{
+                borderBottom: index === 4 ? "2px solid #7c6efb" : null,
+                color: index == 4 ? "white" : null,
+                cursor: "pointer",
+              }}
+            >
+              About me
+            </a>
+          </Link>
+          <button onClick={() => Router.push("/#contact")}>Get in touch</button>
         </div>
       </nav>
     </div>
