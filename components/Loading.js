@@ -18,7 +18,7 @@ function Loading({ display }) {
       setString(nextString);
     }, 2000);
     return () => clearInterval(interval);
-  }, [strings]);
+  }, []);
 
   return (
     <div

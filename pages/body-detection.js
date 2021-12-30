@@ -2,12 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import styles from "../styles/Home.module.scss";
 import "@tensorflow/tfjs";
 import * as handdetection from "@tensorflow-models/hand-pose-detection";
-import * as mpHands from "@mediapipe/hands";
-import * as dat from "dat.gui";
-import * as partColorScales from "../lib/body_color";
+import * as bodyPix from "@tensorflow-models/body-pix";
+import * as posenet from "@tensorflow-models/posenet";
 import Loading from "../components/Loading";
 import { useRouter } from "next/router";
 import { fingerLookupIndices } from "../lib/camera";
+import * as partColorScales from "../lib/body_color";
 
 function HandPose() {
   const router = useRouter();
@@ -21,6 +21,9 @@ function HandPose() {
   const [logs, setLogs] = useState([]);
   const [showRealTimeLogs, setShowRealTimeLogs] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(true);
+  const [minConfidence, setMinConfidence] = useState(0.5);
+  const [net, setNet] = useState(null);
+
   //Video settings
   var constraints = {
     audio: false,
@@ -30,62 +33,110 @@ function HandPose() {
       facingMode: mode,
     },
   };
-  const defaultQuantBytes = 2;
-  const defaultMobileNetMultiplier = 0.75;
-  const defaultMobileNetStride = 16;
-  const defaultMobileNetInternalResolution = "medium";
 
-  const defaultResNetMultiplier = 1.0;
-  const defaultResNetStride = 16;
-  const defaultResNetInternalResolution = "low";
+  const COLOR = "aqua";
+  const BOUNDING_BOX_COLOR = "red";
+  const LINE_WIDTH = 2;
 
-  const guiState = {
-    algorithm: "multi-person-instance",
-    estimate: "partmap",
-    camera: null,
-    flipHorizontal: true,
-    input: {
-      architecture: "MobileNetV1",
-      outputStride: 16,
-      internalResolution: "low",
-      multiplier: 0.5,
-      quantBytes: 2,
-    },
-    multiPersonDecoding: {
-      maxDetections: 5,
-      scoreThreshold: 0.3,
-      nmsRadius: 20,
-      numKeypointForMatching: 17,
-      refineSteps: 10,
-    },
-    segmentation: {
-      segmentationThreshold: 0.7,
-      effect: "mask",
-      maskBackground: true,
-      opacity: 0.7,
-      backgroundBlurAmount: 3,
-      maskBlurAmount: 0,
-      edgeBlurAmount: 3,
-    },
-    partMap: {
-      colorScale: "rainbow",
-      effect: "partMap",
-      segmentationThreshold: 0.5,
-      opacity: 0.9,
-      blurBodyPartAmount: 3,
-      bodyPartEdgeBlurAmount: 3,
-    },
-    // showFps: !isMobile(),
-  };
+  /**
+   * Draws a line on a canvas, i.e. a joint
+   */
+  function drawSegment([ay, ax], [by, bx], color, scale, ctx) {
+    ctx.beginPath();
+    ctx.moveTo(ax * scale, ay * scale);
+    ctx.lineTo(bx * scale, by * scale);
+    ctx.lineWidth = LINE_WIDTH;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  }
+  /**
+   * Draws a pose skeleton by looking up all adjacent keypoints/joints
+   */
+
+  function drawSkeleton(keypoints, minConfidence, ctx, scale) {
+    const adjacentKeyPoints = posenet.getAdjacentKeyPoints(
+      keypoints,
+      minConfidence
+    );
+
+    function toTuple({ y, x }) {
+      return [y, x];
+    }
+
+    adjacentKeyPoints.forEach((keypoints) => {
+      drawSegment(
+        toTuple(keypoints[0].position),
+        toTuple(keypoints[1].position),
+        COLOR,
+        scale,
+        ctx
+      );
+    });
+  }
+
+  /**
+   * Draw the bounding box of a pose. For example, for a whole person standing
+   * in an image, the bounding box will begin at the nose and extend to one of
+   * ankles
+   */
+  function drawBoundingBox(keypoints, ctx) {
+    const boundingBox = posenet.getBoundingBox(keypoints);
+
+    ctx.rect(
+      boundingBox.minX,
+      boundingBox.minY,
+      boundingBox.maxX - boundingBox.minX,
+      boundingBox.maxY - boundingBox.minY
+    );
+
+    ctx.strokeStyle = boundingBoxColor;
+    ctx.stroke();
+  }
+
+  /**
+   * Converts an array of pixel data into an ImageData object
+   */
+  async function renderToCanvas(a, ctx) {
+    const [height, width] = a.shape;
+    const imageData = new ImageData(width, height);
+
+    const data = await a.data();
+
+    for (let i = 0; i < height * width; ++i) {
+      const j = i * 4;
+      const k = i * 3;
+
+      imageData.data[j + 0] = data[k + 0];
+      imageData.data[j + 1] = data[k + 1];
+      imageData.data[j + 2] = data[k + 2];
+      imageData.data[j + 3] = 255;
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  /**
+   * Draw an image on a canvas
+   */
+  function renderImageToCanvas(image, size, canvas) {
+    canvas.width = size[0];
+    canvas.height = size[1];
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(image, 0, 0);
+  }
+
   const handleLogs = () => {
     setShow(!show);
   };
   const handleRealTimeLogs = () => {
     setShowRealTimeLogs(!showRealTimeLogs);
   };
-  const handleRoute = async () => {};
+  const handleRoute = async () => {
+    router.push("/");
+  };
 
-  useEffect(() => {
+  const getWebcam = async () => {
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then(function (mediaStream) {
@@ -95,8 +146,9 @@ function HandPose() {
           });
           setCameras(camera);
         });
+        window.stream = mediaStream;
 
-        var video = document.querySelector("video");
+        var video = videoRef.current;
         video.srcObject = mediaStream;
         video.onloadedmetadata = function (e) {
           video.play();
@@ -109,19 +161,33 @@ function HandPose() {
         setErr(true);
         console.log(err.name + ": " + err.message);
       }); // always check for errors at the end.
-  }, [mode]);
+  };
 
+  const stopWebcam = async () => {
+    const tracks = window.stream.getTracks();
+    console.log(tracks);
+    tracks.forEach(function (track) {
+      track.stop();
+    });
+  };
+
+  useEffect(() => {
+    getWebcam();
+    return () => {
+      stopWebcam();
+    };
+  }, [mode, videoRef]);
   const streamCamVideo = async () => {
-    const model = handdetection.SupportedModels.MediaPipeHands;
-
-    const detector = await handdetection.createDetector(model, {
-      runtime: "mediapipe",
-      modelType: "full",
-      maxHands: 2,
-      solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mpHands.VERSION}`,
+    const detector = await bodyPix.load({
+      architecture: "MobileNetV1",
+      outputStride: 16,
+      internalResolution: "low",
+      multiplier: 0.5,
+      quantBytes: 2,
     });
 
     if (detector) {
+      setNet(detector);
       setLoading(false);
     }
 
@@ -167,7 +233,7 @@ function HandPose() {
   //SETTING UP TENSORFLOW
 
   const detectFrame = async (video, detector) => {
-    await detector.estimateHands(video).then((predictions) => {
+    await detector.segmentMultiPerson(video).then((predictions) => {
       renderPredictions(predictions);
       requestAnimationFrame(() => {
         detectFrame(video, detector);
@@ -175,53 +241,81 @@ function HandPose() {
     });
   };
 
-  const renderPredictions = (predictions) => {
+  const renderPredictions = async (predictions) => {
+    console.log(predictions);
     const ctx = canvasRef?.current?.getContext("2d");
     const ctx2 = document?.getElementById("canvasContainer");
-    const ctx3 = document?.getElementById("video");
-    function drawPoint(y, x, r) {
+    const ctx3 = videoRef.current;
+    ctx.canvas.width = ctx3?.videoWidth;
+    ctx.canvas.height = ctx3?.videoHeight;
+    ctx.clearRect(0, 0, ctx3?.videoWidth, ctx2?.videoHeight);
+    function drawPoint(ctx, y, x, r, color) {
       ctx.beginPath();
       ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
       ctx.fill();
     }
-    function drawPath(points, closePath) {
-      const region = new Path2D();
-      region.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        const point = points[i];
-        region.lineTo(point.x, point.y);
-      }
 
-      if (closePath) {
-        region.closePath();
+    function drawKeypoints(keypoints, minConfidence, ctx, scale = 1) {
+      for (let i = 0; i < keypoints.length; i++) {
+        const keypoint = keypoints[i];
+        // if (keypoint.score < minConfidence) {
+        //   continue;
+        // }
+        const { y, x } = keypoint.position;
+        drawPoint(ctx, y * scale, x * scale, 3, COLOR);
       }
-      ctx.stroke(region);
     }
-    if (ctx) {
-      ctx.canvas.width = ctx3?.videoWidth;
-      ctx.canvas.height = ctx3?.videoHeight;
-      ctx.clearRect(0, 0, ctx3?.videoWidth, ctx2?.videoHeight);
-      predictions.forEach((prediction) => {
-        setLogs((logs) => [...logs, prediction]);
-        ctx.fillStyle = prediction?.handedness === "Left" ? "Red" : "Blue";
-        ctx.strokeStyle = "White";
-        ctx.lineWidth = 2;
-        const keypointsArray = prediction.keypoints;
-        for (let i = 0; i < keypointsArray.length; i++) {
-          const y = keypointsArray[i].x;
-          const x = keypointsArray[i].y;
-          drawPoint(x - 2, y - 2, 3);
-        }
-        const fingers = Object.keys(fingerLookupIndices);
-        for (let i = 0; i < fingers.length; i++) {
-          const finger = fingers[i];
-          const points = fingerLookupIndices[finger].map(
-            (idx) => prediction.keypoints[idx]
-          );
-          drawPath(points, false);
-        }
-      });
+    function drawBoundingBox(keypoints, ctx) {
+      const boundingBox = posenet.getBoundingBox(keypoints);
+
+      ctx.rect(
+        boundingBox.minX,
+        boundingBox.minY,
+        boundingBox.maxX - boundingBox.minX,
+        boundingBox.maxY - boundingBox.minY
+      );
+
+      ctx.strokeStyle = "red";
+      ctx.stroke();
     }
+
+    function drawPoints(ctx, points, radius, color) {
+      const data = points;
+
+      for (let i = 0; i < data.length; i += 2) {
+        const pointY = data[i];
+        const pointX = data[i + 1];
+
+        if (pointX !== 0 && pointY !== 0) {
+          ctx.beginPath();
+          ctx.arc(pointX, pointY, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+      }
+    }
+
+    predictions.forEach(async (prediction) => {
+      const keypoints = prediction.pose.keypoints;
+      const minConfidence = 0;
+      const coloredPartImageData = bodyPix.toColoredPartMask(
+        prediction,
+        partColorScales.rainbow
+      );
+      console.log({ coloredPartImageData });
+      bodyPix.drawMask(
+        canvasRef?.current,
+        videoRef.current,
+        coloredPartImageData,
+        0.9,
+        0
+      );
+      drawKeypoints(keypoints, minConfidence, ctx);
+      drawBoundingBox(keypoints, ctx);
+      drawSkeleton(keypoints, minConfidence, ctx, 1);
+      drawPoints(ctx, prediction.data, 1, "black");
+    });
   };
 
   useEffect(() => {
@@ -301,7 +395,7 @@ function HandPose() {
           {!showRealTimeLogs ? "Show Logs" : "Hide Logs"}
         </button>
       </div>
-      <div className={styles.buttons}>
+      <div className={styles.buttons} style={{ paddingTop: 20 }}>
         <button className={styles.button} onClick={handleRoute}>
           Go Back
         </button>

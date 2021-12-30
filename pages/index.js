@@ -89,14 +89,17 @@ export default function Home() {
                 <h3>Object Detection</h3>
               </div>
 
-              <div className={styles.modalItems}>
+              <div
+                className={styles.modalItems}
+                onClick={() => handleRoute("/qna")}
+              >
                 <Image
                   alt="AR-model"
                   src="/images/2.png"
                   width={100}
                   height={100}
                 />
-                <h3>Text Toxicity Detection</h3>
+                <h3>AI QNA</h3>
               </div>
             </li>
             <li>
@@ -113,7 +116,10 @@ export default function Home() {
                 <h3>Hand Detection</h3>
               </div>
 
-              <div className={styles.modalItems}>
+              <div
+                className={styles.modalItems}
+                onClick={() => handleRoute("/body-detection")}
+              >
                 <Image
                   alt="AR-model"
                   src="/images/4.png"
@@ -121,28 +127,6 @@ export default function Home() {
                   height={100}
                 />
                 <h3>Body Segmentation</h3>
-              </div>
-            </li>
-
-            <li>
-              <div className={styles.modalItems}>
-                <Image
-                  alt="AR-model"
-                  src="/images/5.png"
-                  width={100}
-                  height={100}
-                />
-                <h3>Face Detection</h3>
-              </div>
-
-              <div className={styles.modalItems}>
-                <Image
-                  alt="AR-model"
-                  src="/images/6.png"
-                  width={100}
-                  height={100}
-                />
-                <h3>KNN Classifier</h3>
               </div>
             </li>
           </ul>
