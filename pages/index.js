@@ -195,7 +195,12 @@ export default function Home() {
             <button className={styles.button} onClick={handleModel2}>
               Launch AR
             </button>
-            <button className={styles.button}>Learn More</button>
+            <button
+              className={styles.button}
+              onClick={() => router.push("/developers")}
+            >
+              Learn More
+            </button>
           </div>
         </div>
         <div className={styles.videoContainer}>
@@ -210,7 +215,12 @@ export default function Home() {
             across many gaming worlds, financial applications, and metaverses.
             Create new Agents, etc.
           </p>
-          <button className={styles.button}>Learn More</button>
+          <button
+            className={styles.button}
+            onClick={() => router.push("/about")}
+          >
+            Learn More
+          </button>
         </div>
         <div className={styles.faq}>
           <h3>How Detection Works</h3>
@@ -219,7 +229,12 @@ export default function Home() {
             trained on a large dataset of images collected by the Internet
             Engineering Task Force.
           </p>
-          <button className={styles.button}>Learn More</button>
+          <button
+            className={styles.button}
+            onClick={() => router.push("/developers")}
+          >
+            Learn More
+          </button>
         </div>
       </div>
       <div className={styles.projectContainer}>

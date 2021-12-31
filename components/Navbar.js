@@ -37,10 +37,47 @@ function Navbar({ index }) {
           </span>
         </div>
         <div className={styles.mobileItems}>
-          <a href="#">Home</a>
-          <a href="#">For Developers</a>
-          <a href="#">Github</a>
-          <a href="#">About Us </a>
+          <Link href="/">
+            <a
+              style={{
+                borderBottom: index === 1 ? "2px solid #7c6efb" : null,
+                color: index == 1 ? "white" : null,
+              }}
+            >
+              Home
+            </a>
+          </Link>
+          <Link href="/developers">
+            <a
+              style={{
+                borderBottom: index === 2 ? "2px solid #7c6efb" : null,
+                color: index == 2 ? "white" : null,
+              }}
+            >
+              For Developers
+            </a>
+          </Link>
+          <Link href="https://github.com/ProgrammingInBlood">
+            <a
+              style={{
+                borderBottom: index === 3 ? "2px solid #7c6efb" : null,
+                color: index == 3 ? "white" : null,
+              }}
+            >
+              Github
+            </a>
+          </Link>
+          <Link href="/about">
+            <a
+              style={{
+                borderBottom: index === 4 ? "2px solid #7c6efb" : null,
+                color: index == 4 ? "white" : null,
+                cursor: "pointer",
+              }}
+            >
+              About me
+            </a>
+          </Link>
         </div>
       </div>
       <nav className={styles.navbar}>
