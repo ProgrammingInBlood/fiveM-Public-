@@ -5,6 +5,7 @@ import Loading from "../components/Loading";
 import styles from "../styles/Qna.module.scss";
 import { css } from "@emotion/react";
 import Loader from "react-spinners/BarLoader";
+import Head from "next/head";
 function Qna() {
   const [passage, setPassage] = useState("");
   const [question, setQuestion] = useState("");
@@ -39,6 +40,31 @@ function Qna() {
 
   return (
     <div className={styles.container}>
+      <Head>
+        <title>Unreal Eye | Question & Answer</title>
+        <meta property="og:site_name" content="Unreal Eye"></meta>
+        <meta property="og:url" content="https://eklavyasingh.me/"></meta>
+        <meta
+          property="og:image"
+          content="https://eklavyasingh.me/images/favicon.png"
+        ></meta>
+        <meta name="theme-color" content="#000"></meta>
+        <link
+          rel="icon"
+          type="image/png"
+          href="https://eklavyasingh.me/images/favicon.png"
+        ></link>
+        <meta
+          name="keywords"
+          content="Unreal Eye, AI Question and Answer, Eklavya Singh , eklavyasingh, unrealeye, qna"
+        ></meta>
+        <meta name="robots" content="index, follow"></meta>
+        <meta
+          http-equiv="Content-Type"
+          content="text/html; charset=utf-8"
+        ></meta>
+        <meta name="language" content="English"></meta>
+      </Head>
       <Loading display={!loading} />
       <div className={styles.content}>
         <h1> AI Question and Answer </h1>

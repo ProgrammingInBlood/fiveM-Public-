@@ -1,10 +1,36 @@
 import styles from "../styles/Developers.module.scss";
 import Navbar from "../components/Navbar";
 import Image from "next/image";
+import Head from "next/head";
 
 function Developers() {
   return (
     <div className={styles.container}>
+      <Head>
+        <title>Unreal Eye | For Developers</title>
+        <meta property="og:site_name" content="Unreal Eye"></meta>
+        <meta property="og:url" content="https://eklavyasingh.me/"></meta>
+        <meta
+          property="og:image"
+          content="https://eklavyasingh.me/images/favicon.png"
+        ></meta>
+        <meta name="theme-color" content="#000"></meta>
+        <link
+          rel="icon"
+          type="image/png"
+          href="https://eklavyasingh.me/images/favicon.png"
+        ></link>
+        <meta
+          name="keywords"
+          content="Unreal Eye, AR Hand Detection, Eklavya Singh , eklavyasingh, unrealeye, Hand Detection"
+        ></meta>
+        <meta name="robots" content="index, follow"></meta>
+        <meta
+          http-equiv="Content-Type"
+          content="text/html; charset=utf-8"
+        ></meta>
+        <meta name="language" content="English"></meta>
+      </Head>
       <Navbar index={2} />
       <div className={styles.content}>
         <h1 className={styles.title}>

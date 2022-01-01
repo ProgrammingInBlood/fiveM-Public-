@@ -56,14 +56,29 @@ export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Unreal Eye - Argumented Reality</title>
+        <title>Unreal Eye | Augmented reality</title>
         <meta property="og:site_name" content="UnReal Eye"></meta>
         <meta property="og:url" content="https://eklavyasingh.me/"></meta>
         <meta
           property="og:image"
-          content="https://www.facebook.com/images/fb_icon_325x325.png"
+          content="https://eklavyasingh.me/images/favicon.png"
         ></meta>
         <meta name="theme-color" content="#000"></meta>
+        <link
+          rel="icon"
+          type="image/png"
+          href="https://eklavyasingh.me/images/favicon.png"
+        ></link>
+        <meta
+          name="keywords"
+          content="Unreal Eye, Augmented Reality, Eklavya Singh , eklavyasingh, unrealeye"
+        ></meta>
+        <meta name="robots" content="index, follow"></meta>
+        <meta
+          http-equiv="Content-Type"
+          content="text/html; charset=utf-8"
+        ></meta>
+        <meta name="language" content="English"></meta>
       </Head>
       <Navbar index={1} />
       <div

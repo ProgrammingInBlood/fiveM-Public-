@@ -8,6 +8,7 @@ import Loading from "../components/Loading";
 import { useRouter } from "next/router";
 import { fingerLookupIndices } from "../lib/camera";
 import * as partColorScales from "../lib/body_color";
+import Head from "next/head";
 
 function HandPose() {
   const router = useRouter();
@@ -326,6 +327,31 @@ function HandPose() {
 
   return (
     <div id="container" className={styles.container}>
+      <Head>
+        <title>Unreal Eye | Body Detection</title>
+        <meta property="og:site_name" content="Unreal Eye"></meta>
+        <meta property="og:url" content="https://eklavyasingh.me/"></meta>
+        <meta
+          property="og:image"
+          content="https://eklavyasingh.me/images/favicon.png"
+        ></meta>
+        <meta name="theme-color" content="#000"></meta>
+        <link
+          rel="icon"
+          type="image/png"
+          href="https://eklavyasingh.me/images/favicon.png"
+        ></link>
+        <meta
+          name="keywords"
+          content="Unreal Eye, AR Body Detection, Eklavya Singh , eklavyasingh, unrealeye, Body Detection"
+        ></meta>
+        <meta name="robots" content="index, follow"></meta>
+        <meta
+          http-equiv="Content-Type"
+          content="text/html; charset=utf-8"
+        ></meta>
+        <meta name="language" content="English"></meta>
+      </Head>
       <Loading display={!loading} />
       <div
         className={styles.container}
